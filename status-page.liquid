@@ -1,144 +1,117 @@
-<!-- Create a container for the template specific styles. -->
-<div class="template-status-page">
-    <!-- Page Header & Navbar. -->
-    <header>
-        <!-- Page Navbar. -->
-        <nav class="navbar navbar-default" role="navigation">
-            <div class="container">
-                <div class="navbar-header">
-                    <!-- Page Title. -->
-                    <!-- Hide the title on small screens of a logo exists. -->
-                    <span class="navbar-brand {% if page.brand.logo %}hidden-xs{% endif %}">{{ 'status-page.navbar.title' | t }}</span>
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
 
-                    <!-- Subscription button based on the various options for the page. -->
-                    {% if page.subscription_options.size == 1 %}
-                        <!-- Page only has a single subscription option, display a consolidated button. -->
-                        <a href="{{ page.subscription_options.first[1].url }}" class="btn btn-subscribe navbar-btn navbar-header-btn">
-                            <i class="{{ page.subscription_options.first[1].icon }}"></i>
-                                <span class="visible-xs-inline">{{ 'status-page.navbar.subscribe-button.default' | t }}</span>
-                                <span class="hidden-xs">{{ 'status-page.navbar.subscribe-button.default' | t }} {{ 'status-page.navbar.subscribe-button.via' | t }} {{ 'status-page.navbar.subscribe-button.' | append: page.subscription_options.first[0] | append: '.name' | t }}</span>
-                        </a>
-                    {% elsif page.subscription_options.size > 1 %}
-                        <!-- Button group containing the dropdown. -->
-                        <div class="btn-group navbar-header-btn navbar-btn">
-                            <!-- Core subscription button, activates dropdown for choices. -->
-                            <button class="btn btn-subscribe dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <i class="fa fa-bell hidden-xs"></i> {{ 'status-page.navbar.subscribe-button.default' | t }} <span class="caret"></span>
-                            </button>
+        <!-- Responsive Viewport Configutation. -->
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
 
-                            <!-- Dropdown with subscription options in it. -->
-                            <ul class="dropdown-menu dropdown-menu-right">
-                                <!-- Loop over the collection of subscription options. -->
-                                {% for option in page.subscription_options %}
-                                    <!-- Output a link for this subscription option. -->
-                                    <li>
-                                        <a href="{{ option[1].url }}"><i class="{{ option[1].icon }}"></i> {{ 'status-page.navbar.subscribe-button.' | append: option[0] | append: '.name' | t }} <small>{{ 'status-page.navbar.subscribe-button.' | append: option[0] | append: '.description' | t }}</small></a>
-                                    </li>
-                                {% endfor %}
-                            </ul>
+        <!-- Refresh the page every few seconds. -->
+        <meta http-equiv="refresh" content="30" />
+
+        <!-- We don't want these pages indexed by Google as default. -->
+        <meta name="robots" content="noindex, nofollow" />
+
+        <!-- Favicon. -->
+        <link rel="shortcut icon" href="{{ 'favicon.ico' | asset_url }}">
+
+        <!-- Page Title. -->
+        <title>{{ page.name }}</title>
+
+        <!-- Bootstrap core CSS -->
+        <link href="{{ 'bootstrap.min.css' | asset_url }}" rel="stylesheet">
+        <link href="{{ 'bootstrap-overrides.css' | asset_url }}" rel="stylesheet">
+
+        <!-- Custom styles for this template -->
+        <link href="{{ 'jumbotron-narrow.css' | asset_url }}" rel="stylesheet">
+
+        <!-- Status page styles for this template. -->
+        <link href="{{ 'status-page.css' | asset_url }}" rel="stylesheet">
+
+        <!-- Just for debugging purposes. Don't actually copy this line! -->
+        <!--[if lt IE 9]><script src="{{ 'ie8-responsive-file-warning.js' | asset_url }}"></script><![endif]-->
+
+        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries --> 
+        <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+        <![endif]-->
+    </head>
+
+    <body>
+        <div class="container">
+            <div class="header">
+                <!-- Brand logo. -->
+                <img src="{{ 'logo.gif' | asset_url }}" alt="Brand logo." class="logo pull-left hidden-xs" />
+
+                <!-- Use the page name as the title for the page. -->
+                <h3 class="text-muted">{{ page.name }}</h3>
+            </div>
+
+            <!-- Switch the jumbotron class based on the page state for some useful colouring. -->
+            <div class="jumbotron all-is-well-{% if page.apologies.current == empty %}true{% else %}false{% endif %}">
+                <!-- Loop over the current apologies. -->
+                {% for apology in page.apologies.current %}
+                    <div class="apology current-apology">
+                        <!--- Loop over any updates for the apology. -->
+                        {% for update in apology.updates reversed %}
+                            <!-- Put out the details of the update. -->
+                            <p class="update">
+                                <!-- Date posted. -->
+                                <time class="text-muted">{{ update.created_at | time_ago_in_words }} ago</time> 
+
+                                <!-- Comment for the update. -->
+                                {{ update.content }}
+                            </p>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <!-- No current apologies, put out an all is well. -->
+                    <h1>All Is Well</h1>
+                {% endfor %}
+            </div>
+
+            <div class="row marketing">
+                <div class="col-lg-12">
+                    <!-- Output any recent but now closed apologies. -->
+                    {% for apology in page.apologies.recent %}
+                        <div class="apology">
+                            <!-- The basic apology details. -->
+                            <h4>
+                                <!-- Date posted. -->
+                                <time>Started: {{ apology.created_at | date: '%-d %B %R' }}</time>
+                            </h4>
+
+                            <!-- Any updates for this apology. -->
+                            {% for update in apology.updates %}
+                                <!-- Put out the details of the update. -->
+                                <p>
+                                    <!-- Date posted. -->
+                                    <time class="text-muted">{{ update.created_at | date: '%-d %B - %R' }}</time> 
+
+                                    <!-- Comment for the update. -->
+                                    {{ update.content }}
+                                </p>
+                            {% endfor %}
+
+                            <!-- Closed details. -->
+                            <p>
+                                <time><strong>Ended: {{ apology.closed_at | date: '%-d %B %R' }}</strong></time>
+                            </p>
                         </div>
-                    {% endif %}
+                    {% endfor %}
                 </div>
             </div>
-        </nav>
 
-        <div class="container container-md">
-            <!-- Current Status Message. -->
-            <section id="current-status">
-
-                <dl class="timeline timeline-header">
-                    <!-- Loop over the collection of current notices. -->
-                    {% for notice in page.notices.present %}
-                        <dt class="event event-{{ notice.state }} event-{{ notice.timeline_state }} event-{{ notice.type }}" id="notice-{{ notice.id }}">Notice #{{ notice.id }}</dt>
-                            <dd>
-                                <dl>
-                                    <dt><i class="fa fa-notice-state"></i> {{ 'status-page.header.states.' | append: notice.state | t }}</dt>
-                                        <dd>
-                                            <!-- Has a subject, display it. -->
-                                            <div class="notice-header">
-                                                <!-- The basic subject line. -->
-                                                <h3 class="notice-subject h4">{{ notice.subject }}</h3>
-                                            </div>
-
-                                            <dl>
-                                                <!-- Force sorting in reverse order for open notices. -->
-                                                {% assign ordered_updates = notice.updates | sort: 'created_at' %}
-                                                <!-- Loop over any updates we have for the notice -->
-                                                <!-- We reverse the order so the latest update displays first as the priority. -->
-                                                {% for update in ordered_updates reversed %}
-                                                    <!-- Output the date for the update. -->
-                                                    <dt id="update-{{ update.id }}">
-                                                    </dt>
-                                                {% endfor %}
-                                            </dl>
-                                        </dd>
-                                </dl>
-                            </dd>
-                    {% else %}
-                        <dt class="title">&nbsp;</dt>
-                            <dd>
-                                <!-- No current notices found -->
-                                <!-- We have nothing to be sorry about, so all is well. -->
-                                <h2><i class="fa fa-check-circle-o"></i> {{ 'status-page.header.states.all-systems-are-go' | t }}</h2>
-                                    <!-- Check if any support / social links exists. -->
-                                    {% if page.support.size > 0 or page.social.size > 0 %}
-                                        <!-- Add a reference to support links. -->
-                                        <!-- Use the smart anchor plugin to link/not-link based on visibility. -->
-                                        <p>{{ 'status-page.header.disagree.question' | t }} <a data-smart-anchor="#contact-support">{{ 'status-page.header.disagree.answer' | t }}</a></p>
-                                    {% endif %}
-                            </dd>
-                    {% endfor %}
-                </dl>
-            </section>
-        </div>
-    </header>
-
-    <!-- See if the page has components or not. -->
-    {% if page.components.roots.size > 0 %}
-        <!-- Display the pages components, and their status. -->
-        <section id="page-components" class="section section-page-components">
-            <div class="container container-md">
-                <!-- Render the components, starting at the root level. -->
+            <div class="footer">
+                <!-- Copyright notice. -->
+                <p>&copy; {{ page.name }} {{ 'today' | date: "%Y" }}</p>
             </div>
-        </section>
-    {% endif %}
 
-    <!-- Main Timeline. -->
-    <main>
-        <div class="container container-md">
-            <!-- Timeline of previous notices. -->
-            <dl class="timeline timeline-body">
-                <!-- Timeline of upcoming notices. -->
-                <!-- Only display if they exist. -->
-                {% if page.notices.future.size > 0 %}
-                    <!-- Heading for the list. -->
-                    <lh>{{ 'status-page.body.timeline-heading.future' | t }}</lh>
-
-                    <!-- Sort them in the order in which they're happening. -->
-                    {% assign future_notices = page.notices.future | sort: 'begins_at' %}
-                    <!-- Loop over the collection of future notices. -->
-                    {% for notice in future_notices %}
-                        <!-- Include the timeline for each notice. -->
-                    {% endfor %}
-
-                    <!-- Separator between timeline sections. -->
-                    <hr />
-                {% endif %}
-
-                <!-- Heading for the list. -->
-                <lh>{{ 'status-page.body.timeline-heading.past_recent' | t }}</lh>
-
-                <!-- Sort the historic notice by ended_at, recent to oldest. -->
-                {% assign historic_notices = page.notices.past_recent | sort: 'ended_at' %}
-                <!-- Loop over the collection of previous notices, order date descending. -->
-                {% for notice in historic_notices reversed %}
-                    <!-- Include the timeline for each notice. -->
-                {% endfor %}
-
-                <!-- End of Timeline. -->
-                <dt class="event event-final" role="presentation">Past notices</dt>
-                    <dd>{{ 'status-page.body.no-more-notices' | t: days: page.timeline_threshold_in_days }}</dd>
-            </dl>
         </div>
-    </main>
-</div>
+
+        <!-- Bootstrap core Javascript. -->
+        <script src="{{ 'bootstrap.min.js' | asset_url }}"></script>
+    </body>
+</html>
